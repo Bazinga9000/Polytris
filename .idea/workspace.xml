@@ -21,8 +21,8 @@
       <file leaf-file-name="Polytris.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/Polytris.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="388">
-              <caret line="839" column="67" lean-forward="false" selection-start-line="839" selection-start-column="67" selection-end-line="839" selection-end-column="67" />
+            <state relative-caret-position="369">
+              <caret line="838" column="0" lean-forward="true" selection-start-line="838" selection-start-column="0" selection-end-line="838" selection-end-column="0" />
               <folding>
                 <element signature="e#756#912#0" expanded="false" />
                 <element signature="e#2273#7700#0" expanded="false" />
@@ -415,8 +415,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/Polytris.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="388">
-          <caret line="839" column="67" lean-forward="false" selection-start-line="839" selection-start-column="67" selection-end-line="839" selection-end-column="67" />
+        <state relative-caret-position="369">
+          <caret line="838" column="0" lean-forward="true" selection-start-line="838" selection-start-column="0" selection-end-line="838" selection-end-column="0" />
           <folding>
             <element signature="e#756#912#0" expanded="false" />
             <element signature="e#2273#7700#0" expanded="false" />
