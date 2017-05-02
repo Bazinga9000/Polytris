@@ -59,25 +59,41 @@ if True:
     gravitytype = 0
     speedcurve = 0
 
-    controls = [pygame.K_LEFT, pygame.K_RIGHT, pygame.K_z, pygame.K_x, pygame.K_c, pygame.K_DOWN, pygame.K_UP]
+    if pathlib.Path("Controls.txt").is_file():
+        with open("Controls.txt", "r") as controlsfile:
+            controls = json.loads(controlsfile.read())
+    else:
+        controls = [pygame.K_LEFT, pygame.K_RIGHT, pygame.K_z, pygame.K_x, pygame.K_c, pygame.K_DOWN, pygame.K_UP] #default controls
+
     controlslist = {"Left" : 0,"Right" : 1,"Rotate Left" : 2,"Rotate Right" : 3, "Hold" : 4, "Soft Drop" : 5, "Hard Drop" : 6}
+
+    controlsnames = ["Left","Right","Rotate Left","Rotate Right","Hold","Soft Drop","Hard Drop"]
 
 
 
     
     gamemode = 0
-    version = "2.0.0"
+    version = "2.1.1"
     gametype = 0
     difficulty = 0
     settingvalue = 0
     settingindex = 0
     clock = pygame.time.Clock()
 
-    minsetvalue = [1,0,0,0,0,"X","X","X","X",0,0]
-    maxsetvalue = [12,2,12,12,1,"X","X","X","X",1,5]
+
+
+    speed_curves = ["Speedy","Normal","Jupiter","Sol"]
+
+    minsetvalue = [1,0,0,0,0,0,"X","X","X",0,0]
+    maxsetvalue = [12,2,12,12,1,len(speed_curves) - 1,"X","X","X",2,5]
+
 
     automove = [0, 0]
     dastime = 99999
+    aretime = 0
+
+
+    wallkicks = [[0,0],[1,0],[-1,0],[0,1],[0,-1],[-2,0],[0,-2]]
 
 
 #survival mode stuff
@@ -86,6 +102,7 @@ if True:
     garbagelist = ["X",120 * 20,120 * 15,120 * 12,120 * 12,120 * 10]
     survcolors = [(0,75,8),(26,92,2),(72,109,5),(126,122,8),(143,90,13),(160,48,19)]
     leveljump = [0,20,40,60,80,100]
+    survival_difficulties = ["Easy","Normal","Hard","Insane","Ludicrous","Devil"]
 
 
 
@@ -125,15 +142,21 @@ def draw(gamemode):
         title = smallfont.render("Gravity Type", True, (0, 0, 204))
         screen.blit(title, (105, 400))
 
+        title = smallfont.render("Speed Settings", True, (0,0,204))
+        screen.blit(title, (105, 450))
+
         title = smallfont.render("Gametype", True, (0, 0, 204))
-        screen.blit(title, (105, 500))
+        screen.blit(title, (105, 600))
 
         if gametype == 1:
             title = smallfont.render("Difficulty",True,(0,0,204))
-            screen.blit(title,(105,550))
+            screen.blit(title,(105,650))
 
         title = font.render("Press Enter to Begin", True, (0, 0, 204))
-        screen.blit(title, ((screen_width - title.get_width()) // 2, 600))
+        screen.blit(title, ((screen_width - title.get_width()) // 4, 700))
+
+        title = font.render("Press E to Edit In-Game Controls",True,(0,0,204))
+        screen.blit(title, ((3 * (screen_width - title.get_width())) // 4, 700))
         
 
         #enabled poly
@@ -217,8 +240,24 @@ def draw(gamemode):
 
             cord = cord + 30 + typetxt.get_width()
 
+        # gravitytype
+        colors = [(204, 0, 0) for i in speed_curves]
+        colors[speedcurve] = (0, 204, 0)
+
+        cord = 330
+
+        for n, name in enumerate(speed_curves):
+            typetxt = smallfont.render(name, True, colors[n])
+            screen.blit(typetxt, (cord, 450))
+
+            if settingindex == 5 and settingvalue == n:
+                arrow = font.render("^", True, (204, 204, 204))
+                screen.blit(arrow, (cord, 475))
+
+            cord = cord + 30 + typetxt.get_width()
+
         #gametype
-        types = ["Simple","Survival","Doubles (NYI)"]
+        types = ["Simple","Survival","Clock Shock"]
         colors = [(204,0,0) for i in types]
         colors[gametype] = (0,204,0)
 
@@ -226,30 +265,30 @@ def draw(gamemode):
 
         for n,name in enumerate(types):
             typetxt = smallfont.render(name,True,colors[n])
-            screen.blit(typetxt,(cord,500))
+            screen.blit(typetxt,(cord,600))
 
             if settingindex == 9 and settingvalue == n:
                 arrow = font.render("^", True, (204, 204, 204))
-                screen.blit(arrow, (cord, 525))
+                screen.blit(arrow, (cord, 625))
 
             cord = cord + 30 + typetxt.get_width()
 
+
         if gametype == 1:
-            difflevels = ["Easy","Normal","Hard","Insane","Ludicrous","Devil"]
-            colors = [(204,0,0) for i in difflevels]
+            colors = [(204,0,0) for i in survival_difficulties]
             colors[difficulty] = (0,204,0)
 
             cord = 330
 
-            for n,name in enumerate(difflevels):
+            for n,name in enumerate(survival_difficulties):
                 difftxt = smallfont.render(name,True,colors[n])
-                screen.blit(difftxt, (cord, 550))
+                screen.blit(difftxt, (cord, 650))
 
                 cord = cord + 30 + difftxt.get_width()
 
                 if settingindex == 10 and settingvalue - 1 == n:
                     arrow = font.render("^", True, (204, 204, 204))
-                    screen.blit(arrow, (cord, 575))
+                    screen.blit(arrow, (cord, 675))
 
             if settingindex == 10 and settingvalue == 0:  # For some reason, the above loop doesn't draw this case ¯\_(ツ)_/¯
                 arrow = font.render("^", True, (204, 204, 204))
@@ -265,8 +304,8 @@ def draw(gamemode):
         vertshift = (screen_height - (height * squaresize)) + 30
 
 
-        gametimertxt = smallfont.render(str(gametimer) + "|" + str(dastime),True,(204,204,0))
-        screen.blit(gametimertxt,(30,30))
+        #gametimertxt = smallfont.render(str(gametimer)  + "|" + str(aretime),True,(204,204,0))
+        #screen.blit(gametimertxt,(30,30))
 
 
         scoretxt = smallfont.render("Score: " + intWithCommas(score), True, (0, 204, 0))
@@ -279,22 +318,48 @@ def draw(gamemode):
         gravitytxt = smallfont.render("Gravity: " + str(round(1/gravity, 2)) + "G", True, (0, 204, 0))
         screen.blit(gravitytxt, (30, 160))
 
+        gravtxt = smallfont.render("Gravity Type: " + ["Naive", "Recursive"][gravitytype], True, (0, 204, 0))
+        screen.blit(gravtxt, (30, 190))
+
         locktxt = smallfont.render("Lock Delay: " + str(lockspeed) + " Frames", True, (0, 204, 0))
-        screen.blit(locktxt, (30, 190))
+        screen.blit(locktxt, (30, 220))
 
 
         linestxt = smallfont.render("Lines Cleared: " + str(lines), True, (0, 204, 0))
-        screen.blit(linestxt, (30, 220))
+        screen.blit(linestxt, (30, 250))
+
+
+
+        curvetxt = smallfont.render("Speed Setting: " + speed_curves[speedcurve],True,(0,204,0))
+        screen.blit(curvetxt, (30, 280))
+
+        polytxt = ""
+        for i in range(12):
+            if enabledpoly[i]:
+                polytxt = polytxt + str(i+1) + ","
+
+        polytxt = polytxt[:-1]
+
+        screen.blit(smallfont.render("Spawning Polyominoes:", True, (0,204,0)),(30, 310))
+        screen.blit(smallfont.render(polytxt,True,(0,204,0)),(30,330))
+
+        if gametype == 2:
+            shocktxt = smallfont.render("Time Remaining: " + framestotime(shocktime - gametimer), True, (0,204,0))
+        else:
+            shocktxt = smallfont.render("Time Elapsed: " + framestotime(gametimer), True, (0,204,0))
+
+        screen.blit(shocktxt, (30, 360))
+
 
         if gametype == 0:
             word = "Mode: Simple"
         elif gametype == 1:
-            word = "Mode: Survival [" + ["Easy","Normal","Hard","Insane","Ludicrous","Devil"][difficulty] + "]"
+            word = "Mode: Survival [" + survival_difficulties[difficulty] + "]"
         elif gametype == 2:
-            word = "Mode: Doubles"
+            word = "Mode: Clock Shock"
 
         modetxt = smallfont.render(word,True,(0,204,0))
-        screen.blit(modetxt,(30,280))
+        screen.blit(modetxt,(30,480))
 
         rect = (horizshift - 50, 0, 100 + (width * squaresize), 9999)
 
@@ -363,10 +428,14 @@ def draw(gamemode):
             y_cord += squaresize
             y_cord += 25
 
-            for brick in heldpoly:
-                rect = (x_cord + (brick[0] * squaresize), y_cord + squaresize * brick[1], squaresize, squaresize)
-                pygame.draw.rect(screen, (50, 0, 50), rect)
-                pygame.draw.rect(screen, (255, 255, 255), rect, 1)
+            if heldpoly != []:
+                for brick in Polyominoes.flatten(heldpoly,True):
+                    rect = (x_cord + (brick[0] * squaresize), y_cord + squaresize * brick[1], squaresize, squaresize)
+
+                    heldlist = [polycolorlist[heldcolor], (50,50,50)]
+
+                    pygame.draw.rect(screen, heldlist[alreadyheld], rect)
+                    pygame.draw.rect(screen, (255, 255, 255), rect, 1)
 
         if gamemode == 99:
             x_cord = horizshift + 65 + (width * squaresize)
@@ -457,15 +526,83 @@ def randomvalue():
     return value
 
 def calculategravity(level,curve):
-    if curve == 0:
+
+    curvename = speed_curves[curve]
+
+    if curvename == "Speedy":
         return 60 / (259/256)**level
 
         # blocks per frame = (259/256)^n / 60
         # frames per block = 60 / (256/256)^n
 
+    if curvename == "Normal":
+        return 60 / (257/256)**level
+
+    if curvename == "Jupiter":
+
+        return 1/20
+
+    if curvename == "Sol":
+        return 1/72
+
 def calculatelockdelay(level,curve):
-    if curve == 0:
-        return int(80/(1 + 3/256 * (level - 609)))
+
+
+    curvename = speed_curves[curve]
+
+    if curvename == "Speedy":
+
+        # DO NOT QUESTION THE MATH
+        if level >= int((math.log(60 * (height - 2))) / (-8 * math.log(2) + math.log(7) + math.log(37))):
+            return int(40 / (1 + 3 / 256 * (level - 609)))
+        else:
+            return 40
+
+    if curvename == "Normal":
+        return 40
+
+    if curvename == "Jupiter":
+        return int(40 / (1 + 1 / 256 * (level)))
+
+    if curvename == "Sol":
+        return 5 #HAVE FUN GUYS
+
+def calculatedas(level,curve):
+
+
+    curvename = speed_curves[curve]
+
+    if curvename in ["Speedy","Normal"]:
+        return 40//width
+
+    if curvename == "Jupiter":
+        return 20//width
+
+    if curvename == "Sol":
+        return 1
+
+def calculatedast(level,curve):
+
+    curvename = speed_curves[curve]
+
+    if curvename in ["Speedy","Normal"]:
+        return 30
+
+    if curvename == "Jupiter":
+        return 15
+
+    if curvename == "Sol":
+        return 0
+
+def calculateare(level, curve):
+
+    curvename = speed_curves[curve]
+
+    if curvename in ["Speedy", "Normal", "Jupiter"]:
+        return 15
+
+    if curvename == "Sol":
+        return 5
 
 def lineclearpoints(clears, level):
     if clears == 0: return 0
@@ -509,6 +646,33 @@ def lineclearpoints(clears, level):
     else:
         return sum([2 * lineclearpoints(clears-m, level) for m in [1,2,3]])
 
+def framestotime(count):
+
+    millseconds = (count % 60) * (1000 // 60)
+
+    if millseconds <= 9:
+        millseconds = "00" + str(millseconds)
+    elif millseconds <= 99:
+        millseconds = "0" + str(millseconds)
+
+
+    seconds = (count % (60 * 60)) // 60
+
+    if seconds <= 9:
+        seconds = "0" + str(seconds)
+
+    minutes = count // (60 * 60)
+
+    return str(minutes) + ":" + str(seconds) + "." + str(millseconds)[:3]
+
+def shockadd(lineclears):
+    if lineclears == 0: return 0
+
+    if lineclears == 1: return 60
+
+    if lineclears == 2: return 120
+
+    if lineclears >= 3: return shockadd(lineclears-1) + shockadd(lineclears-2)
 
 while True:
     event = pygame.event.poll()
@@ -524,7 +688,7 @@ while True:
 
             if key == pygame.K_UP and settingindex != 0:
                 if settingindex == 9:
-                    settingindex = 4
+                    settingindex = 5
                 else:
                     settingindex -= 1
                     
@@ -534,8 +698,8 @@ while True:
                     if settingvalue not in range(minsetvalue[settingindex], maxsetvalue[settingindex] + 1):
                         settingvalue = 1
                         
-            if key == pygame.K_DOWN and (settingindex != 9 or (gametype == 1 and settingindex != 10)):
-                if settingindex == 4:
+            if key == pygame.K_DOWN and (settingindex != 9 or (gametype in [1] and settingindex != 10)):
+                if settingindex == 5:
                     settingindex = 9
                 else:
                     settingindex += 1
@@ -559,6 +723,8 @@ while True:
                     if settingindex == 2 and settingvalue != speedmult: speedmult = settingvalue
                     if settingindex == 3 and settingvalue != startinglevel / 50: startinglevel = 50 * settingvalue
                     if settingindex == 4 and settingvalue != gravitytype: gravitytype = settingvalue
+                    if settingindex == 5 and settingvalue != speedcurve: speedcurve = settingvalue
+
 
                     if settingindex == 9 and settingvalue != gametype: gametype = settingvalue
                     if settingindex == 10 and settingvalue != difficulty: difficulty = settingvalue
@@ -566,13 +732,29 @@ while True:
                     enabledpoly[settingvalue - 1] = (enabledpoly[settingvalue - 1] + 1) % 2
 
             if key == pygame.K_RETURN:
+
+                gametimer = 0
+
+                aretime = 0
+
                 currentpoly = []
                 score = 0
                 softdrop = False
                 lockdelay = -1
                 level = startinglevel
-                gravity = 120
+                gravity = 60
                 harddrop = False
+
+                if gametype == 1:
+                    level,speedmult,gravitytype,boardsize = 0,0,0,0
+                    enabledpoly = [0 for i in range(12)]
+                    enabledpoly[3] = 1
+                    speedcurve = 0
+
+                if gametype == 2:
+
+                    shocktime = 60 * 60 * 3
+
                 nextpoly = [[] for i in range(5)]
                 nextpoly = [randombrick(randomvalue()) if i == [] else i for i in nextpoly]
                 colorlist = [Polyominoes.color(nextpoly[i]) for i in range(5)]
@@ -584,12 +766,9 @@ while True:
                 lines = 0
                 rot = 0
                 gamemode = 1
+                heldcolor = 0
 
-                if gametype == 1:
-                    level,speedmult,gravitytype,boardsize = 0,0,0,0
-                    enabledpoly = [0 for i in range(12)]
-                    enabledpoly[3] = 1
-                    speedcurve = 0
+
 
                 maxpoly = 0
                 for i in range(12):
@@ -604,17 +783,61 @@ while True:
                 height = len(grid)
                 width = len(grid[0])
 
+            if key == pygame.K_e:
+
+                newcontrols = []
+
+                for i in range(7):
+                    while True:
+                        event = pygame.event.poll()
+                        if event.type == pygame.QUIT:
+                            exit()
+
+                        if event.type == pygame.KEYDOWN:
+                            key = event.key
+
+                            newcontrols.append(key)
+
+                            break
+
+                        screen.fill((0,0,0))
+
+                        message = font.render("Input Key for " + controlsnames[i],True,(204,102,0))
+                        screen.blit(message, ((screen.get_width() - message.get_width()) // 2,(screen.get_height() - message.get_height()) // 2))
+
+                        pygame.display.flip()
+
+
+                with open("Controls.txt","w") as controlsfile:
+                    json.dump(newcontrols,controlsfile)
+
+                controls = newcontrols
+
+
         if gamemode == 1:
 
-            if key == controls[controlslist["Hold"]]:
+            if key == controls[controlslist["Hold"]] and not alreadyheld and currentpoly:
                 polyswap = [currentpoly[:], heldpoly[:]]
 
                 heldpoly = polyswap[0][:]
 
                 currentpoly = polyswap[1][:]
 
+                alreadyheld = 1
+
+                hsl = [polycolor, heldcolor]
+
+
+                heldcolor = hsl[0]
+
+                polycolor = hsl[1]
+
+
+
+
                 if currentpoly == []:
                     rotations = 0
+
 
                     currentpoly = nextpoly[0][:]
                     nextpoly[0] = nextpoly[1][:]
@@ -634,20 +857,20 @@ while True:
 
                         nextpoly[4] = Polyominoes.flatten(nextpoly[4])
 
-                        if nextpoly[4] not in [nextpoly[i] for i in [0, 1, 2]]:
+                        if nextpoly[4] not in [nextpoly[i] for i in [0, 1, 2, 3]]:
                             break
 
                     currentpoly = Polyominoes.flatten(currentpoly)
 
-                    rowz = 1
-                    rowzg = 1
-                    colz = (width - max_col) // 2
 
                     ghostpoly = currentpoly[:]
 
                     max_col = max([i[0] for i in currentpoly])
                     max_row = max([i[1] for i in currentpoly])
 
+                rowz = 1
+                rowzg = 1
+                colz = (width - max_col) // 2
 
                 if Polyominoes.checkifcollision(currentpoly, grid, 0, 0, colz, rowz):
                     gamemode = 99
@@ -655,18 +878,18 @@ while True:
             if key == controls[controlslist["Left"]]:
                 if not Polyominoes.checkifcollision(Polyominoes.shift_poly(currentpoly,-1,0),grid,0,0,colz,rowz):
                     colz -= 1
-                    dastime = gametimer + 60
+                    dastime = gametimer + calculatedast(level,speedcurve)
                     automove[0] = 1
 
             if key == controls[controlslist["Right"]]:
                 if not Polyominoes.checkifcollision(Polyominoes.shift_poly(currentpoly,1,0),grid,0,0,colz,rowz):
                     colz += 1
-                    dastime = gametimer + 60
+                    dastime = gametimer + calculatedast(level,speedcurve)
                     automove[1] = 1
 
             if key == controls[controlslist["Rotate Left"]] and currentpoly != []:
 
-                for i in [[0,0],[0,1],[0,-1],[1,0]]:
+                for i in wallkicks:
                     if not Polyominoes.checkifcollision(Polyominoes.rotate_poly(currentpoly,3),grid,i[0],i[1],colz,rowz):
                         rowz += i[1]
                         colz += i[0]
@@ -675,14 +898,14 @@ while True:
 
             if key == controls[controlslist["Rotate Right"]] and currentpoly != []:
 
-                for i in [[0,0],[0,1],[0,-1],[1,0]]:
+                for i in wallkicks:
                     if not Polyominoes.checkifcollision(Polyominoes.rotate_poly(currentpoly,1),grid,i[0],i[1],colz,rowz):
                         rowz += i[1]
                         colz += i[0]
                         currentpoly = Polyominoes.rotate_poly(currentpoly,1)
                         break
 
-            if key == controls[controlslist["Hard Drop"]]:
+            if key == controls[controlslist["Hard Drop"]] and currentpoly:
                 harddrop = True
 
             if key == pygame.K_l:
@@ -759,22 +982,30 @@ while True:
                     else:
                         grid = Polyominoes.addgarbage(grid, difficulty)
 
+        elif gametype == 2:
+            if shocktime <= gametimer:
+                gamemode = 99
 
-        if gametype == 1: countedlevel = level + leveljump[difficulty]
-        if gametype == 0: countedlevel = level
+        if gametype == 1:
+            countedlevel = level + leveljump[difficulty]
+        else:
+            countedlevel = level
 
         gravity = calculategravity(countedlevel, speedcurve)
 
-        if speedcurve == 0:
 
-            #DO NOT QUESTION THE MATH
-            if level >= int((math.log(60 * (height - 2)))/(-8 * math.log(2) + math.log(7) + math.log(37))):
-                lockspeed = calculatelockdelay(level, speedcurve)
-            else:
-                lockspeed = 80
+        lockspeed = calculatelockdelay(level,speedcurve)
 
-        if currentpoly == []:
+
+
+        draw(gamemode)
+        pygame.display.flip()
+
+
+        if currentpoly == [] and gametimer - aretime >= 0:
             rotations = 0
+
+            alreadyheld = 0
 
             currentpoly = nextpoly[0][:]
             nextpoly[0] = nextpoly[1][:]
@@ -794,7 +1025,7 @@ while True:
 
                 nextpoly[4] = Polyominoes.flatten(nextpoly[4])
 
-                if nextpoly[4] not in [nextpoly[i] for i in [0, 1, 2]]:
+                if nextpoly[4] not in [nextpoly[i] for i in [0, 1, 2, 3]]:
                     break
 
             currentpoly = Polyominoes.flatten(currentpoly)
@@ -811,9 +1042,10 @@ while True:
 
             ghostpoly = currentpoly[:]
 
+
         if gametimer > dastime:
 
-            if gametimer % (80//width) == 0:
+            if gametimer % calculatedas(level,speedcurve) == 0:
 
                 if automove[0] and not automove[1] and not Polyominoes.checkifcollision(currentpoly,grid,-1,0,colz,rowz):
                     colz -= 1
@@ -824,12 +1056,13 @@ while True:
             while not Polyominoes.checkifcollision(currentpoly,grid,0,1,colz,rowz):
                 rowz += 1
 
+
         if gravity >= 1 and gametimer % int(gravity) == 0 and softdrop == False and not (
                 Polyominoes.checkifcollision(currentpoly,grid,0,1,colz,rowz)):
             rowz += 1
 
 
-        if gravity < 1 and softdrop == False:
+        elif gravity < 1 and softdrop == False:
             for i in range(int(1/gravity)):
                 if not Polyominoes.checkifcollision(currentpoly,grid,0,1,colz,rowz):
                     rowz += 1
@@ -837,7 +1070,7 @@ while True:
                 else:
                     break
 
-        if softdrop == True and gametimer % 2 == 0 and gravity >= 2:
+        elif softdrop == True and gametimer % 2 == 0 and gravity >= 2:
             if not Polyominoes.checkifcollision(currentpoly,grid,0,1,colz,rowz):
                 rowz += 1
 
@@ -845,8 +1078,11 @@ while True:
         colzg = colz
         rowzg = rowz
 
-        while not Polyominoes.checkifcollision(ghostpoly,grid,0,1,colzg,rowzg):
-            rowzg += 1
+
+        if currentpoly:
+            while not Polyominoes.checkifcollision(ghostpoly,grid,0,1,colzg,rowzg):
+                rowzg += 1
+
 
 
         if Polyominoes.checkifcollision(currentpoly,grid,0,1,colz,rowz):
@@ -859,6 +1095,10 @@ while True:
                 Polyominoes.imprint(currentpoly, rowz, colz, grid, polycolor)
                 currentpoly = []
                 ghostpoly = []
+
+
+                aretime = gametimer + calculateare(level,speedcurve)
+
 
                 level += 1
 
@@ -877,6 +1117,7 @@ while True:
                                             if grid[row + 1][col] == 0:
                                                 grid[row + 1][col] = grid[row][col]
                                                 grid[row][col] = 0
+
 
 
                 elif gravitytype == 1:
@@ -926,6 +1167,8 @@ while True:
 
 
 
+                if gametype == 2:
+                    shocktime += shockadd(lineclears)
 
                 lockdelay = -1
                 score += lineclearpoints(lineclears, level)
@@ -936,11 +1179,15 @@ while True:
 
 
 
+
+
+
     # <,>,L,R,H,S,D
     if gametype == 0: rectcolor = (5,31,169)
     if gametype == 1: rectcolor = survcolors[difficulty]
+    if gametype == 2: rectcolor = (169,0,169)
 
 
     draw(gamemode)
     pygame.display.flip()
-    clock.tick(120)
+    clock.tick(60)
