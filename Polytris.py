@@ -576,6 +576,10 @@ def calculatedas(level,curve):
         return 40//width
 
     if curvename == "Jupiter":
+
+        if 20//width == 0:
+            return 1
+
         return 20//width
 
     if curvename == "Sol":
