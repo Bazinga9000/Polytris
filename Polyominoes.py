@@ -59,7 +59,7 @@ def addgarbage(grid, randomize):
 
     for i in range(len(grid[0])):
         if newgrid[-1][i] != 0:
-            newgrid[-1][i] = 8
+            newgrid[-1][i] = 19
 
     print(newgrid)
 
@@ -191,52 +191,32 @@ def color(poly):
         elif poly == [[0, 0], [1, 0], [1, 1], [2, 0]]: return 6 #T
 
     if len(poly) == 5:
-        if poly == [[0, 0], [0, 1], [1, 0], [1, 1], [2, 0]]: return 5 #LP
-        if poly == [[0, 0], [1, 0], [2, 0], [2, 1], [3, 0]]: return 7 #RY
-        if poly == [[0, 0], [0, 1], [1, 1], [1, 2], [2, 1]]: return 2 #RF
-        if poly == [[0, 1], [1, 0], [1, 1], [1, 2], [2, 1]]: return 6 #X
-        if poly == [[0, 0], [1, 0], [1, 1], [2, 0], [2, 1]]: return 5 #RP
-        if poly == [[0, 0], [1, 0], [1, 1], [1, 2], [2, 0]]: return 6 #T
-        if poly == [[0, 0], [1, 0], [1, 1], [2, 0], [3, 0]]: return 7 #LY
-        if poly == [[0, 1], [1, 1], [1, 2], [2, 0], [2, 1]]: return 4 #LF
-        if poly == [[0, 0], [0, 1], [0, 2], [1, 0], [1, 2]]: return 2 #U
-        if poly == [[0, 0], [0, 1], [0, 2], [0, 3], [1, 0]]: return 2 #RL
-        if poly == [[0, 2], [1, 0], [1, 1], [1, 2], [2, 0]]: return 3 #LZ
-        if poly == [[0, 0], [0, 1], [0, 2], [1, 0], [2, 0]]: return 4 #V
-        if poly == [[0, 1], [0, 2], [0, 3], [1, 0], [1, 1]]: return 1 #RN
-        if poly == [[0, 1], [0, 2], [1, 0], [1, 1], [2, 0]]: return 1 #W
-        if poly == [[0, 1], [1, 1], [2, 0], [2, 1], [3, 0]]: return 3 #LN
-        if poly == [[0, 0], [0, 1], [1, 0], [2, 0], [3, 0]]: return 4 #LL
-        if poly == [[0, 1], [0, 2], [1, 1], [2, 0], [2, 1]]: return 1 #RZ
-        if poly == [[0, 0], [1, 0], [2, 0], [3, 0], [4, 0]]: return 7 #I
+        if poly == [[0, 0], [0, 1], [1, 0], [1, 1], [2, 0]]: return 5 #Q
+        if poly == [[0, 0], [1, 0], [2, 0], [2, 1], [3, 0]]: return 6 #Y2
+        if poly == [[0, 0], [0, 1], [1, 1], [1, 2], [2, 1]]: return 2 #F
+        if poly == [[0, 1], [1, 0], [1, 1], [1, 2], [2, 1]]: return 15 #X
+        if poly == [[0, 0], [1, 0], [1, 1], [2, 0], [2, 1]]: return 10 #P
+        if poly == [[0, 0], [1, 0], [1, 1], [1, 2], [2, 0]]: return 11 #T
+        if poly == [[0, 0], [1, 0], [1, 1], [2, 0], [3, 0]]: return 16 #Y
+        if poly == [[0, 1], [1, 1], [1, 2], [2, 0], [2, 1]]: return 4 #R
+        if poly == [[0, 0], [0, 1], [0, 2], [1, 0], [1, 2]]: return 12 #U
+        if poly == [[0, 0], [0, 1], [0, 2], [0, 3], [1, 0]]: return 7 #J
+        if poly == [[0, 2], [1, 0], [1, 1], [1, 2], [2, 0]]: return 18 #Z
+        if poly == [[0, 0], [0, 1], [0, 2], [1, 0], [2, 0]]: return 13 #V
+        if poly == [[0, 1], [0, 2], [0, 3], [1, 0], [1, 1]]: return 1 #LN
+        if poly == [[0, 1], [0, 2], [1, 0], [1, 1], [2, 0]]: return 14 #W
+        if poly == [[0, 1], [1, 1], [2, 0], [2, 1], [3, 0]]: return 3 #RN
+        if poly == [[0, 0], [0, 1], [1, 0], [2, 0], [3, 0]]: return 9 #L
+        if poly == [[0, 1], [0, 2], [1, 1], [2, 0], [2, 1]]: return 17 #S
+        if poly == [[0, 0], [1, 0], [2, 0], [3, 0], [4, 0]]: return 8 #I
 
-        '''
-
-
-        ZZZ
-          ZZ
-        '''
 
     else:
 
-        return random.randint(1,7) #TODO FiX
+        return random.randint(1,18) #TODO FiX
 
-        '''
-        .....
-        .....
-        .....
-        .....
-        .....
 
-        '''
 
-        # CYAN 0
-        # RED 1
-        # BLUE 2
-        # GREEN 3
-        # ORANGE 4
-        # YELLOW 5
-        # PURPLE 6
 
 
 

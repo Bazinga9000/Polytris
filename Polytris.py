@@ -29,15 +29,35 @@ screen = pygame.display.set_mode((1000, 760))
 
 
 polycolorlist = [
-("NaN","NaN","NaN"),
-(155,   0,   0),
-(  0,   0, 155),
-(  0, 155,   0),
-(239, 121, 34),
-(155, 155, 0),
-(155, 0, 155),
-( 48,  199, 239),
-    (139, 69, 19)
+    ("NaN","NaN","NaN"),
+
+    #TETROMINO
+
+    (136,   0,   0), #RED 1 (LN)
+    (  0,   0, 165), #BLUE 2 (F)
+    (  0, 111,   0), #GREEN 3 (RN)
+    (226, 165,   0), #ORANGE 4 (R)
+    (226, 226, 112), #YELLOW 5 (Q)
+    (147,  18, 158), #PURPLE 6 (RY)
+    (124, 197, 226), #CYAN 7 (J)
+    (226, 226, 226), #WHITE 8 (I)
+    (226, 193, 106), #PEACH 9 (L)
+    (124, 124,   0), #OLIVE 10 (P)
+    (121,  65,   0), #BROWN 11 (T)
+    (226, 156,  51), #LIGHT ORANGE 12 (U)
+    (90, 90, 90), #GRAY 13 (V)
+    (  0, 226, 136), #EMERALD 14 (W)
+    ( 85,   0, 226), #INDIGO 15 (X)
+    (220, 160, 226), #LAVENDER 16 (Y)
+    (162, 226, 134), #LIME 17 (S)
+    (235, 133, 111), #LIGHT RED 18 (Z)
+    (139,  69,  19), #GARBAGE BROWN
+
+    #EVERYTHING ELSE
+    #http://harddrop.com/forums/index.php?act=Attach&type=post&id=591
+
+
+    ()
 
 ]
 
@@ -82,7 +102,7 @@ if True:
 
 
 
-    speed_curves = ["Speedy","Normal","Jupiter","Sol"]
+    speed_curves = ["Speedy","Normal","Jupiter","Sol","Guideline","Zero-G"]
 
     minsetvalue = [1,0,0,0,0,0,"X","X","X",0,0]
     maxsetvalue = [12,2,12,12,1,len(speed_curves) - 1,"X","X","X",2,5]
@@ -545,6 +565,16 @@ def calculategravity(level,curve):
     if curvename == "Sol":
         return 1/72
 
+    if curvename == "Guideline":
+
+        levell = guidelineclears // 10
+
+        return ((0.8 - ((levell - 1) * 0.007))**(levell - 1)) * 60
+
+    if curvename == "Zero-G":
+        return 99999
+
+
 def calculatelockdelay(level,curve):
 
 
@@ -567,6 +597,9 @@ def calculatelockdelay(level,curve):
     if curvename == "Sol":
         return 5 #HAVE FUN GUYS
 
+    if curvename in ["Guideline","Zero-G"]:
+        return 30
+
 def calculatedas(level,curve):
 
 
@@ -585,6 +618,9 @@ def calculatedas(level,curve):
     if curvename == "Sol":
         return 1
 
+    if curvename in ["Guideline","Zero-G"]:
+        return 30//width
+
 def calculatedast(level,curve):
 
     curvename = speed_curves[curve]
@@ -598,11 +634,14 @@ def calculatedast(level,curve):
     if curvename == "Sol":
         return 0
 
+    if curvename in ["Guideline", "Zero-G"]:
+        return 18
+
 def calculateare(level, curve):
 
     curvename = speed_curves[curve]
 
-    if curvename in ["Speedy", "Normal", "Jupiter"]:
+    if curvename in ["Speedy", "Normal", "Jupiter","Guideline","Zero-G"]:
         return 15
 
     if curvename == "Sol":
@@ -677,6 +716,14 @@ def shockadd(lineclears):
     if lineclears == 2: return 120
 
     if lineclears >= 3: return shockadd(lineclears-1) + shockadd(lineclears-2)
+
+def guideline_clear_count(linescleared):
+    if linescleared == 0: return 0
+    if linescleared == 1: return 1
+    if linescleared == 2: return 3
+    if linescleared == 3: return 5
+    if linescleared == 4: return 8
+    else: return int(round((0.33 * (linescleared**2)) + 0.7 * linescleared))
 
 while True:
     event = pygame.event.poll()
@@ -771,6 +818,7 @@ while True:
                 rot = 0
                 gamemode = 1
                 heldcolor = 0
+                guidelineclears = 0
 
 
 
@@ -1176,6 +1224,7 @@ while True:
 
                 lockdelay = -1
                 score += lineclearpoints(lineclears, level)
+                guidelineclears += guideline_clear_count(lineclears)
                 level += lineclears
                 lines += lineclears
                 harddrop = False
