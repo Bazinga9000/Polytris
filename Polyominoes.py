@@ -213,9 +213,22 @@ def color(poly):
 
     else:
 
-        return random.randint(1,18) #TODO FiX
+        print(hash_polyomino(poly))
 
+        return (1 + (hash_polyomino(poly) % 18))
 
+#returns a UNIQUE key for each one-sided polyomino, useful for coloring hexominoes
+def hash_polyomino(polyomino):
+
+    newpoly = flatten(polyomino,True)
+
+    key = hash(str(newpoly))
+
+    for i in range(4):
+
+        key = min([key, hash(str(rotate_poly(newpoly,i)))])
+
+    return key
 
 
 
