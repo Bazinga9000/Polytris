@@ -93,7 +93,7 @@ if True:
 
     
     gamemode = 0
-    version = "2.1.1"
+    version = "2.2.0"
     gametype = 0
     difficulty = 0
     settingvalue = 0
@@ -104,13 +104,15 @@ if True:
 
     speed_curves = ["Speedy","Normal","Jupiter","Sol","Guideline","Zero-G"]
 
-    minsetvalue = [1,0,0,0,0,0,"X","X","X",0,0]
-    maxsetvalue = [12,2,12,12,1,len(speed_curves) - 1,"X","X","X",2,5]
+    minsetvalue = [1,0,0,0,0,0,1,"X","X",0,0]
+    maxsetvalue = [12,2,12,12,1,len(speed_curves) - 1,30,"X","X",2,5]
 
 
     automove = [0, 0]
     dastime = 99999
     aretime = 0
+
+    das = 5
 
 
     wallkicks = [[0,0],[1,0],[-1,0],[0,1],[0,-1],[-2,0],[0,-2]]
@@ -164,6 +166,9 @@ def draw(gamemode):
 
         title = smallfont.render("Speed Settings", True, (0,0,204))
         screen.blit(title, (105, 450))
+
+        title = smallfont.render("DAS (Frames)", True, (0,0,204))
+        screen.blit(title, (105, 500))
 
         title = smallfont.render("Gametype", True, (0, 0, 204))
         screen.blit(title, (105, 600))
@@ -275,6 +280,22 @@ def draw(gamemode):
                 screen.blit(arrow, (cord, 475))
 
             cord = cord + 30 + typetxt.get_width()
+
+        #dasframes
+        cord = 330
+        for i in range(1,31):
+            if das == i:
+                numbertxt = smallfont.render(str(i), True, (0, 204, 0))
+            else:
+                numbertxt = smallfont.render(str(i), True, (204, 0, 0))
+
+            if settingvalue == i and settingindex == 6:
+                arrow = font.render("^", True, (204, 204, 204))
+                screen.blit(arrow, (cord, 525))
+
+            screen.blit(numbertxt, (cord, 500))
+
+            cord = cord + 5 + numbertxt.get_width()
 
         #gametype
         types = ["Simple","Survival","Clock Shock"]
@@ -606,14 +627,14 @@ def calculatedas(level,curve):
     curvename = speed_curves[curve]
 
     if curvename in ["Speedy","Normal"]:
-        return 40//width
+        return 20//width
 
     if curvename == "Jupiter":
 
-        if 20//width == 0:
+        if 10//width == 0:
             return 1
 
-        return 20//width
+        return 10//width
 
     if curvename == "Sol":
         return 1
@@ -626,10 +647,10 @@ def calculatedast(level,curve):
     curvename = speed_curves[curve]
 
     if curvename in ["Speedy","Normal"]:
-        return 30
+        return 10
 
     if curvename == "Jupiter":
-        return 15
+        return 5
 
     if curvename == "Sol":
         return 0
@@ -739,7 +760,7 @@ while True:
 
             if key == pygame.K_UP and settingindex != 0:
                 if settingindex == 9:
-                    settingindex = 5
+                    settingindex = 6
                 else:
                     settingindex -= 1
                     
@@ -750,7 +771,7 @@ while True:
                         settingvalue = 1
                         
             if key == pygame.K_DOWN and (settingindex != 9 or (gametype in [1] and settingindex != 10)):
-                if settingindex == 5:
+                if settingindex == 6:
                     settingindex = 9
                 else:
                     settingindex += 1
@@ -775,6 +796,7 @@ while True:
                     if settingindex == 3 and settingvalue != startinglevel / 50: startinglevel = 50 * settingvalue
                     if settingindex == 4 and settingvalue != gravitytype: gravitytype = settingvalue
                     if settingindex == 5 and settingvalue != speedcurve: speedcurve = settingvalue
+                    if settingindex == 6 and settingvalue != das: das = settingvalue
 
 
                     if settingindex == 9 and settingvalue != gametype: gametype = settingvalue
@@ -1097,7 +1119,7 @@ while True:
 
         if gametimer > dastime:
 
-            if gametimer % calculatedas(level,speedcurve) == 0:
+            if gametimer % das == 0:
 
                 if automove[0] and not automove[1] and not Polyominoes.checkifcollision(currentpoly,grid,-1,0,colz,rowz):
                     colz -= 1
